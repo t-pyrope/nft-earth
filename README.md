@@ -9,7 +9,7 @@ git clone https://github.com/t-pyrope/nft-earth.git
 cd nft-earth
 npm install
 ```
-2. If you don't have what3words API Key, [get it on the what3words web site](https://accounts.what3words.com/create-api-key?referrer=/public-api)
+2. If you don't have what3words API Key, you can [get it on the what3words web site](https://accounts.what3words.com/create-api-key?referrer=/public-api)
 3. Create `.env` file inside the root folder and put your key inside:
 ```
 REACT_APP_API_KEY=********
