@@ -5,7 +5,7 @@ import what3words from '@what3words/api';
 import { What3wordsService } from '@what3words/api/dist/service';
 
 import { drawGrid } from '../../helpers/map';
-import { Button } from '@mui/material';
+import { Box, Button } from '@mui/material';
 
 function Grid({ api }: { api: What3wordsService }) {
   const map = useMap();
@@ -22,17 +22,13 @@ function FlyMapTo({ mapChanged }: { mapChanged: number | undefined }) {
 
   useEffect(() => {
     if (!mapChanged) return;
-    if (navigator.geolocation) {
-      navigator.geolocation.getCurrentPosition(
-        (position) => {
-          map.flyTo([position.coords.latitude, position.coords.longitude]);
-        },
-        (e) => console.error(e),
-        { enableHighAccuracy: true },
-      );
-    } else {
-      console.log('no');
-    }
+    navigator.geolocation?.getCurrentPosition(
+      (position) => {
+        map.flyTo([position.coords.latitude, position.coords.longitude]);
+      },
+      (e) => console.error(e),
+      { enableHighAccuracy: true },
+    );
   }, [mapChanged]);
 
   return null;
@@ -40,19 +36,45 @@ function FlyMapTo({ mapChanged }: { mapChanged: number | undefined }) {
 
 function MapView() {
   const [mapChanged, setMapChanged] = useState<number>();
+  const [isTracking, setIsTracking] = useState<boolean>(false);
+  const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [chosenSquares, setChosenSquares] = useState<Array<string>>([]);
   const baseViewCoords: LatLngTuple = [50.0755, 14.4378];
 
   const api = what3words();
   api.setApiKey(process.env.REACT_APP_API_KEY ?? '');
-  // const data = api
-  //   .convertToCoordinates({ words: 'daring.lion.race' })
-  //   .then((value) => {
-  //     console.log(value);
-  //     return value;
-  //   });
 
-  const onClick = () => {
+  const startTracking = () => {
     setMapChanged(Math.random());
+    if (!isTracking) setIsTracking(true);
+  };
+
+  const finishTracking = () => setIsTracking(false);
+
+  const addSquare = () => {
+    setMapChanged(Math.random());
+    setIsLoading(true);
+
+    navigator.geolocation?.getCurrentPosition(
+      (position) => {
+        api
+          .convertTo3wa({
+            coordinates: {
+              lat: position.coords.latitude,
+              lng: position.coords.longitude,
+            },
+          })
+          .then(function (response) {
+            if (!chosenSquares.includes(response.words)) {
+              setChosenSquares((prev) => [...prev, response.words]);
+            }
+            setIsLoading(false);
+          })
+          .catch((err) => console.error(err));
+      },
+      (e) => console.error(e),
+      { enableHighAccuracy: true },
+    );
   };
 
   return (
@@ -73,19 +95,46 @@ function MapView() {
         <Grid api={api} />
         <FlyMapTo mapChanged={mapChanged} />
       </MapContainer>
-      <Button
-        onClick={onClick}
-        color="secondary"
-        variant="contained"
-        sx={{
-          position: 'absolute',
-          bottom: '30px',
-          right: '20px',
-          zIndex: 401,
-          fontWeight: 600,
-        }}>
-        Start tracking
-      </Button>
+      {isTracking ? (
+        <Box
+          sx={{
+            position: 'absolute',
+            bottom: '30px',
+            right: '20px',
+            zIndex: 401,
+            fontWeight: 600,
+          }}>
+          <Button
+            onClick={addSquare}
+            disabled={isLoading}
+            color="secondary"
+            variant="contained"
+            sx={{ fontWeight: 600 }}>
+            {isLoading ? 'Loading' : 'Add square'}
+          </Button>
+          <Button
+            onClick={finishTracking}
+            color="error"
+            variant="contained"
+            sx={{ marginLeft: '1rem', fontWeight: 600 }}>
+            Finish
+          </Button>
+        </Box>
+      ) : (
+        <Button
+          onClick={startTracking}
+          color="secondary"
+          variant="contained"
+          sx={{
+            position: 'absolute',
+            bottom: '30px',
+            right: '20px',
+            zIndex: 401,
+            fontWeight: 600,
+          }}>
+          Start tracking
+        </Button>
+      )}
     </>
   );
 }
