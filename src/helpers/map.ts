@@ -7,8 +7,8 @@ export function drawGrid(map: Map, api: What3wordsService) {
 
   if (loadFeatures) {
     // Zoom level is high enough
-    var ne = map.getBounds().getNorthEast();
-    var sw = map.getBounds().getSouthWest();
+    const ne = map.getBounds().getNorthEast();
+    const sw = map.getBounds().getSouthWest();
 
     // Call the what3words Grid API to obtain the grid squares within the current visble bounding box
     api
@@ -27,6 +27,10 @@ export function drawGrid(map: Map, api: What3wordsService) {
       })
       .then(function (data: any) {
         // If the grid layer is already present, remove it as it will need to be replaced by the new grid section
+        map.eachLayer((l) => {
+          if (l.getPane()?.className?.includes('leaflet-overlay-pane'))
+            map.removeLayer(l);
+        });
         L.geoJSON(data, {
           style: function () {
             return {

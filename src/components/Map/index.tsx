@@ -4,7 +4,7 @@ import { LatLngTuple } from 'leaflet';
 import what3words from '@what3words/api';
 import { What3wordsService } from '@what3words/api/dist/service';
 
-import { drawGrid } from '../helpers/map';
+import { drawGrid } from '../../helpers/map';
 
 function Grid({ api }: { api: What3wordsService }) {
   const map = useMap();
