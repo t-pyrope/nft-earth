@@ -4,7 +4,7 @@ import { LatLngTuple } from 'leaflet';
 import what3words from '@what3words/api';
 import { What3wordsService } from '@what3words/api/dist/service';
 
-import { drawGrid } from '../../helpers/map';
+import { drawGrid, locateUser } from '../../helpers/map';
 import { Box, Button } from '@mui/material';
 
 function Grid({ api }: { api: What3wordsService }) {
@@ -12,7 +12,7 @@ function Grid({ api }: { api: What3wordsService }) {
 
   useEffect(() => {
     map.whenReady(() => drawGrid(map, api));
-    map.on('move', () => drawGrid(map, api));
+    map.on('moveend', () => drawGrid(map, api));
   }, [map]);
   return null;
 }
@@ -24,7 +24,7 @@ function FlyMapTo({ mapChanged }: { mapChanged: number | undefined }) {
     if (!mapChanged) return;
     navigator.geolocation?.getCurrentPosition(
       (position) => {
-        map.flyTo([position.coords.latitude, position.coords.longitude]);
+        map.flyTo([position.coords.latitude, position.coords.longitude], 20);
       },
       (e) => console.error(e),
       { enableHighAccuracy: true },
@@ -34,11 +34,34 @@ function FlyMapTo({ mapChanged }: { mapChanged: number | undefined }) {
   return null;
 }
 
+function RedSquare({
+  api,
+  words,
+}: {
+  api: What3wordsService;
+  words: string | undefined;
+}) {
+  const map = useMap();
+
+  useEffect(() => {
+    const timeout = setTimeout(() => {
+      if (words) locateUser(map, api, words);
+    }, 2000);
+
+    return () => {
+      clearTimeout(timeout);
+    };
+  }, [api]);
+
+  return null;
+}
+
 function MapView() {
   const [mapChanged, setMapChanged] = useState<number>();
   const [isTracking, setIsTracking] = useState<boolean>(false);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [chosenSquares, setChosenSquares] = useState<Array<string>>([]);
+  const [currentWords, setCurrentWords] = useState<string>();
   const baseViewCoords: LatLngTuple = [50.0755, 14.4378];
 
   const api = what3words();
@@ -47,14 +70,6 @@ function MapView() {
   const startTracking = () => {
     setMapChanged(Math.random());
     if (!isTracking) setIsTracking(true);
-  };
-
-  const finishTracking = () => setIsTracking(false);
-
-  const addSquare = () => {
-    setMapChanged(Math.random());
-    setIsLoading(true);
-
     navigator.geolocation?.getCurrentPosition(
       (position) => {
         api
@@ -65,16 +80,22 @@ function MapView() {
             },
           })
           .then(function (response) {
-            if (!chosenSquares.includes(response.words)) {
-              setChosenSquares((prev) => [...prev, response.words]);
-            }
-            setIsLoading(false);
+            setCurrentWords(response.words);
           })
           .catch((err) => console.error(err));
       },
       (e) => console.error(e),
       { enableHighAccuracy: true },
     );
+  };
+
+  const finishTracking = () => setIsTracking(false);
+
+  const addSquare = () => {
+    if (!currentWords || chosenSquares.includes(currentWords)) return;
+    setIsLoading(true);
+    setChosenSquares((prev) => [...prev, currentWords]);
+    setIsLoading(false);
   };
 
   return (
@@ -94,6 +115,7 @@ function MapView() {
         />
         <Grid api={api} />
         <FlyMapTo mapChanged={mapChanged} />
+        {isTracking && <RedSquare api={api} words={currentWords} />}
       </MapContainer>
       {isTracking ? (
         <Box
