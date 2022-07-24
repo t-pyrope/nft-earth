@@ -77,3 +77,11 @@ export function locateUser(map: Map, api: What3wordsService, words: string) {
       })
       .catch(console.error);
 }
+
+export function unlocateUser(map: Map) {
+  map.eachLayer((l) => {
+    if (l instanceof L.Rectangle) {
+      map.removeLayer(l);
+    }
+  });
+}

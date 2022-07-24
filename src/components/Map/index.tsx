@@ -3,9 +3,9 @@ import { MapContainer, TileLayer, useMap } from 'react-leaflet';
 import { LatLngTuple } from 'leaflet';
 import what3words from '@what3words/api';
 import { What3wordsService } from '@what3words/api/dist/service';
-
-import { drawGrid, locateUser } from '../../helpers/map';
 import { Box, Button } from '@mui/material';
+
+import { drawGrid, locateUser, unlocateUser } from '../../helpers/map';
 
 function Grid({ api }: { api: What3wordsService }) {
   const map = useMap();
@@ -37,21 +37,21 @@ function FlyMapTo({ mapChanged }: { mapChanged: number | undefined }) {
 function RedSquare({
   api,
   words,
+  isTracking,
 }: {
   api: What3wordsService;
   words: string | undefined;
+  isTracking: boolean;
 }) {
   const map = useMap();
 
   useEffect(() => {
-    const timeout = setTimeout(() => {
-      if (words) locateUser(map, api, words);
-    }, 2000);
-
-    return () => {
-      clearTimeout(timeout);
-    };
-  }, [api]);
+    if (words && isTracking) {
+      locateUser(map, api, words);
+    } else if (!isTracking) {
+      unlocateUser(map);
+    }
+  }, [api, isTracking]);
 
   return null;
 }
@@ -89,7 +89,15 @@ function MapView() {
     );
   };
 
-  const finishTracking = () => setIsTracking(false);
+  const finishTracking = () => {
+    setIsTracking(false);
+  };
+
+  const cancel = () => {
+    setChosenSquares([]);
+    setCurrentWords('');
+    setIsTracking(false);
+  };
 
   const addSquare = () => {
     if (!currentWords || chosenSquares.includes(currentWords)) return;
@@ -115,7 +123,7 @@ function MapView() {
         />
         <Grid api={api} />
         <FlyMapTo mapChanged={mapChanged} />
-        {isTracking && <RedSquare api={api} words={currentWords} />}
+        <RedSquare api={api} words={currentWords} isTracking={isTracking} />
       </MapContainer>
       {isTracking ? (
         <Box
@@ -136,10 +144,17 @@ function MapView() {
           </Button>
           <Button
             onClick={finishTracking}
-            color="error"
+            color="primary"
             variant="contained"
             sx={{ marginLeft: '1rem', fontWeight: 600 }}>
             Finish
+          </Button>
+          <Button
+            onClick={cancel}
+            color="error"
+            variant="contained"
+            sx={{ marginLeft: '1rem', fontWeight: 600 }}>
+            Cancel
           </Button>
         </Box>
       ) : (
