@@ -69,7 +69,7 @@ export function locateUser(map: Map, api: What3wordsService, words: string) {
           [bbox[3], bbox[0]],
         ];
 
-        const rectangle = L.rectangle(bounds, {
+        L.rectangle(bounds, {
           color: '#ff7800',
           weight: 1,
           pane: locPane as unknown as string,
