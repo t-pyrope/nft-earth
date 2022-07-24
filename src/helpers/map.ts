@@ -29,10 +29,10 @@ export function drawGrid(map: Map, api: What3wordsService) {
         // If the grid layer is already present, remove it as it will need to be replaced by the new grid section
         map.eachLayer((l) => {
           if (l.getPane()?.className?.includes('leaflet-overlay-pane')) {
-            // TODO: adds more and more grids
-            // map.removeLayer(l);
+            map.removeLayer(l);
           }
         });
+
         L.geoJSON(data, {
           style: function () {
             return {
@@ -48,20 +48,32 @@ export function drawGrid(map: Map, api: What3wordsService) {
 }
 
 export function locateUser(map: Map, api: What3wordsService, words: string) {
-  // TODO: add only 1 time, not every time function is invoked
-  api
-    .convertToCoordinates({ words, format: 'geojson' })
-    .then(function (data: any) {
-      const bbox = data.features[0].bbox;
-      const bounds: LatLngBoundsExpression = [
-        [bbox[1], bbox[2]],
-        [bbox[3], bbox[0]],
-      ];
+  map.eachLayer((l) => {
+    if (!l.getPane('loc')) {
+      map.createPane('loc');
+      const locPane = map.getPane('loc');
+      if (locPane) locPane.style.zIndex = '450';
+    }
+    if (l instanceof L.Rectangle) {
+      map.removeLayer(l);
+    }
+  });
+  const locPane = map.getPane('loc');
+  if (locPane)
+    api
+      .convertToCoordinates({ words, format: 'geojson' })
+      .then(function (data: any) {
+        const bbox = data.features[0].bbox;
+        const bounds: LatLngBoundsExpression = [
+          [bbox[1], bbox[2]],
+          [bbox[3], bbox[0]],
+        ];
 
-      const rectangle = L.rectangle(bounds, {
-        color: '#ff7800',
-        weight: 1,
-      }).addTo(map);
-    })
-    .catch(console.error);
+        const rectangle = L.rectangle(bounds, {
+          color: '#ff7800',
+          weight: 1,
+          pane: locPane as unknown as string,
+        }).addTo(map);
+      })
+      .catch(console.error);
 }
