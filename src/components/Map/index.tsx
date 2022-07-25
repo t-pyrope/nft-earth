@@ -5,7 +5,12 @@ import what3words from '@what3words/api';
 import { What3wordsService } from '@what3words/api/dist/service';
 import { Box, Button } from '@mui/material';
 
-import { drawGrid, locateUser, unlocateUser } from '../../helpers/map';
+import {
+  drawChosenSquares,
+  drawGrid,
+  locateUser,
+  unlocateUser,
+} from '../../helpers/map';
 
 function Grid({ api }: { api: What3wordsService }) {
   const map = useMap();
@@ -38,20 +43,38 @@ function RedSquare({
   api,
   words,
   isTracking,
+  chosenSquares,
 }: {
   api: What3wordsService;
   words: string | undefined;
   isTracking: boolean;
+  chosenSquares: string[];
 }) {
   const map = useMap();
 
   useEffect(() => {
-    if (words && isTracking) {
+    if (words && isTracking && !chosenSquares.includes(words)) {
       locateUser(map, api, words);
-    } else if (!isTracking) {
+    } else {
       unlocateUser(map);
     }
   }, [api, isTracking]);
+
+  return null;
+}
+
+function ChosenSquares({
+  api,
+  chosenSquares,
+}: {
+  chosenSquares: string[];
+  api: What3wordsService;
+}) {
+  const map = useMap();
+
+  useEffect(() => {
+    if (chosenSquares.length) drawChosenSquares(map, api, chosenSquares);
+  }, [chosenSquares]);
 
   return null;
 }
@@ -123,7 +146,13 @@ function MapView() {
         />
         <Grid api={api} />
         <FlyMapTo mapChanged={mapChanged} />
-        <RedSquare api={api} words={currentWords} isTracking={isTracking} />
+        <RedSquare
+          api={api}
+          words={currentWords}
+          isTracking={isTracking}
+          chosenSquares={chosenSquares}
+        />
+        <ChosenSquares chosenSquares={chosenSquares} api={api} />
       </MapContainer>
       {isTracking ? (
         <Box

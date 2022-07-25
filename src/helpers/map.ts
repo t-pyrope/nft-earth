@@ -47,6 +47,31 @@ export function drawGrid(map: Map, api: What3wordsService) {
   }
 }
 
+function addSquare(
+  api: What3wordsService,
+  words: string,
+  color: string,
+  map: Map,
+  pane: string,
+) {
+  api
+    .convertToCoordinates({ words, format: 'geojson' })
+    .then(function (data: any) {
+      const bbox = data.features[0].bbox;
+      const bounds: LatLngBoundsExpression = [
+        [bbox[1], bbox[2]],
+        [bbox[3], bbox[0]],
+      ];
+
+      L.rectangle(bounds, {
+        color,
+        weight: 1,
+        pane,
+      }).addTo(map);
+    })
+    .catch(console.error);
+}
+
 export function locateUser(map: Map, api: What3wordsService, words: string) {
   map.eachLayer((l) => {
     if (!l.getPane('loc')) {
@@ -60,22 +85,26 @@ export function locateUser(map: Map, api: What3wordsService, words: string) {
   });
   const locPane = map.getPane('loc');
   if (locPane)
-    api
-      .convertToCoordinates({ words, format: 'geojson' })
-      .then(function (data: any) {
-        const bbox = data.features[0].bbox;
-        const bounds: LatLngBoundsExpression = [
-          [bbox[1], bbox[2]],
-          [bbox[3], bbox[0]],
-        ];
+    addSquare(api, words, '#C62828', map, locPane as unknown as string);
+}
 
-        L.rectangle(bounds, {
-          color: '#ff7800',
-          weight: 1,
-          pane: locPane as unknown as string,
-        }).addTo(map);
-      })
-      .catch(console.error);
+export function drawChosenSquares(
+  map: Map,
+  api: What3wordsService,
+  chosenSquares: string[],
+) {
+  map.eachLayer((l) => {
+    if (!l.getPane('chosen')) {
+      map.createPane('chosen');
+      const chosenPane = map.getPane('chosen');
+      if (chosenPane) chosenPane.style.zIndex = '475';
+    }
+  });
+  const chosenPane = map.getPane('chosen');
+  if (chosenPane)
+    chosenSquares.map((words) => {
+      addSquare(api, words, '#388E3C', map, chosenPane as unknown as string);
+    });
 }
 
 export function unlocateUser(map: Map) {
