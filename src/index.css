@@ -16,7 +16,6 @@ body {
 
 .MuiButtonBase-root.MuiButton-root.MuiButton-contained {
   font-weight: 900;
-  letter-spacing: 0.7px;
 }
 
 .leaflet-container {

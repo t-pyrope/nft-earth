@@ -9,6 +9,10 @@ import { drawChosenSquares, drawGrid } from "../helpers";
 import AddressBox from "./AddressBox";
 import { Box, Button } from "@mui/material";
 
+const options = {
+  enableHighAccuracy: true,
+};
+
 function Grid({
   api,
   setMoveEnd,
@@ -37,25 +41,27 @@ function Grid({
 function ChosenSquares({
   api,
   chosenSquares,
-  isTracking,
+  isClaiming,
   words,
+  setMoveEnd,
 }: {
   chosenSquares: string[];
   api: What3wordsService;
-  isTracking: boolean;
+  isClaiming: boolean;
   words: string;
+  setMoveEnd: React.Dispatch<React.SetStateAction<number>>;
 }) {
   const map = useMap();
 
   useEffect(() => {
     if (chosenSquares.length) {
-      if (isTracking) {
-        drawChosenSquares(map, api, chosenSquares, isTracking);
+      if (isClaiming) {
+        drawChosenSquares(map, api, chosenSquares, isClaiming, setMoveEnd);
       } else {
-        drawChosenSquares(map, api, [words], isTracking);
+        drawChosenSquares(map, api, [words], isClaiming, setMoveEnd);
       }
     }
-  }, [chosenSquares, api, map]);
+  }, [chosenSquares, isClaiming]);
 
   return null;
 }
@@ -76,27 +82,22 @@ function Map() {
   api.setApiKey(import.meta.env.VITE_API_KEY ?? "");
 
   useEffect(() => {
-    const intervalId = setInterval(() => {
-      navigator.geolocation.getCurrentPosition((position) => {
+    const id = navigator.geolocation.watchPosition(
+      (position) => {
         setHasAccessToLocation(true);
         const {
-          coords: { latitude, longitude },
+          coords: { latitude: lat, longitude: lng },
         } = position;
         if (
           !initialCoords ||
-          (initialCoords[0] !== latitude && initialCoords[1] !== longitude)
+          (initialCoords[0] !== lat && initialCoords[1] !== lng)
         ) {
-          console.log("position changed");
-          setInitialCoords([latitude, longitude]);
+          setInitialCoords([lat, lng]);
           api
             .convertTo3wa({
-              coordinates: {
-                lat: latitude,
-                lng: longitude,
-              },
+              coordinates: { lat, lng },
             })
             .then((res) => {
-              console.log("api.convertTo3wa");
               setWords(res.words);
               if (!chosenSquares.includes(res.words)) {
                 setChosenSquares([...chosenSquares, res.words]);
@@ -107,10 +108,15 @@ function Map() {
               console.error(err);
             });
         }
-      });
-    }, 2000);
+      },
+      (err) => {
+        setHasAccessToLocation(false);
+        console.error(err);
+      },
+      options
+    );
 
-    return () => clearInterval(intervalId);
+    return () => navigator.geolocation.clearWatch(id);
   }, [initialCoords, chosenSquares]);
 
   useEffect(() => {
@@ -161,8 +167,9 @@ function Map() {
         <ChosenSquares
           chosenSquares={chosenSquares}
           api={api}
-          isTracking={isClaiming}
+          isClaiming={isClaiming}
           words={words}
+          setMoveEnd={setMoveEnd}
         />
       </MapContainer>
       {!isClaiming && (

@@ -27,6 +27,7 @@ export function drawGrid(map: Map, api: What3wordsService) {
         format: "geojson",
       })
       .then(function (data: any) {
+        console.log("api drawGrid");
         // If the grid layer is already present, remove it as it will need to be replaced by the new grid section
         map.eachLayer((l) => {
           if (l.getPane()?.className?.includes("leaflet-overlay-pane")) {
@@ -53,11 +54,13 @@ function addSquare(
   words: string,
   color: string,
   map: Map,
-  pane: string
+  pane: string,
+  setMoveEnd: React.Dispatch<React.SetStateAction<number>>
 ) {
   api
     .convertToCoordinates({ words, format: "geojson" })
     .then(function (data: any) {
+      console.log("api addSquare");
       const bbox = data.features[0].bbox;
       const bounds: LatLngBoundsExpression = [
         [bbox[1], bbox[2]],
@@ -84,6 +87,7 @@ function addSquare(
           pane,
           className: words + color.slice(1),
         }).addTo(map);
+        setMoveEnd(Math.random());
       }
     })
     .catch(console.error);
@@ -93,7 +97,8 @@ export function drawChosenSquares(
   map: Map,
   api: What3wordsService,
   chosenSquares: string[],
-  isTracking: boolean
+  isClaiming: boolean,
+  setMoveEnd: React.Dispatch<React.SetStateAction<number>>
 ) {
   map.eachLayer((l) => {
     if (!l.getPane("chosen")) {
@@ -105,7 +110,14 @@ export function drawChosenSquares(
   const chosenPane = map.getPane("chosen");
   if (chosenPane)
     chosenSquares.map((words) => {
-      const color = isTracking ? "#fa3737" : GREEN;
-      addSquare(api, words, color, map, chosenPane as unknown as string);
+      const color = isClaiming ? "#fa3737" : GREEN;
+      addSquare(
+        api,
+        words,
+        color,
+        map,
+        chosenPane as unknown as string,
+        setMoveEnd
+      );
     });
 }
