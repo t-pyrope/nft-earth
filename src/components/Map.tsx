@@ -44,21 +44,23 @@ function ChosenSquares({
   isClaiming,
   words,
   setMoveEnd,
+  claimed,
 }: {
   chosenSquares: string[];
   api: What3wordsService;
   isClaiming: boolean;
   words: string;
   setMoveEnd: React.Dispatch<React.SetStateAction<number>>;
+  claimed: boolean;
 }) {
   const map = useMap();
 
   useEffect(() => {
     if (chosenSquares.length) {
-      if (isClaiming) {
-        drawChosenSquares(map, api, chosenSquares, isClaiming, setMoveEnd);
-      } else {
+      if (!isClaiming && !claimed) {
         drawChosenSquares(map, api, [words], isClaiming, setMoveEnd);
+      } else {
+        drawChosenSquares(map, api, chosenSquares, isClaiming, setMoveEnd);
       }
     }
   }, [chosenSquares, isClaiming]);
@@ -69,6 +71,7 @@ function ChosenSquares({
 function Map() {
   const [hasAccessToLocation, setHasAccessToLocation] = useState(false);
   const [isClaiming, setIsClaiming] = useState(false);
+  const [claimed, setClaimed] = useState(false);
   const [chosenSquares, setChosenSquares] = useState<Array<string>>([]);
   const [words, setWords] = useState("");
   const [initialCoords, setInitialCoords] = useState<LatLngTuple>();
@@ -138,6 +141,7 @@ function Map() {
 
   const finishTracking = () => {
     setIsClaiming(false);
+    setClaimed(true);
   };
 
   if (!hasAccessToLocation || !initialCoords)
@@ -170,6 +174,7 @@ function Map() {
           isClaiming={isClaiming}
           words={words}
           setMoveEnd={setMoveEnd}
+          claimed={claimed}
         />
       </MapContainer>
       {!isClaiming && (
