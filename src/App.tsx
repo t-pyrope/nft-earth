@@ -5,7 +5,8 @@ import "leaflet/dist/leaflet.css";
 
 import Map from "./components/Map";
 
-import { MoralisProvider } from 'react-moralis';
+import { createClient, configureChains, defaultChains, WagmiConfig } from 'wagmi';
+import { publicProvider } from 'wagmi/providers/public';
 // @ts-ignore
 import Login from './components/Login.jsx';
 
@@ -16,17 +17,22 @@ const theme = createTheme({
   },
 });
 
+const { provider, webSocketProvider } = configureChains(defaultChains, [publicProvider()]);
+
+const client = createClient({
+  provider,
+  webSocketProvider,
+  autoConnect: true,
+});
+
 function App() {
-  const serverurl = import.meta.env.VITE_SERVER_URL;
-  const appid     = import.meta.env.VITE_APP_ID;
   return (
-    <MoralisProvider serverUrl={serverurl} appId={appid}>
-      <ThemeProvider theme={theme}>
-        {serverurl}
+    <ThemeProvider theme={theme}>
+      <WagmiConfig client={client}>
         <Login />
         {/*<Map />*/}
-      </ThemeProvider>
-    </MoralisProvider>
+      </WagmiConfig>
+    </ThemeProvider>
   );
 }
 

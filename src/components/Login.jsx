@@ -1,41 +1,23 @@
-import { useEffect } from 'react';
-import { useMoralis } from 'react-moralis';
+import { useConnect, useDisconnect } from 'wagmi';
+import { InjectedConnector } from 'wagmi/connectors/injected';
+import axios from 'axios';
 
-const Login = () => {
+function Signin() {
+	const { connectAsync } = useConnect();
 
-	const { authenticate, isAuthenticated, isAuthenticating, user, account, logout } = useMoralis();
+	const handleAuth = async () => {
+		const { account, chain } = await connectAsync({ connector: new InjectedConnector() });
 
-	const afterAuthentication = (_user) => {
-		console.log("User authenticated:", _user);
-	}
+		const userData = { address: account, chain: chain.id, network: 'evm' };
 
-	useEffect(() => {
-		if (isAuthenticated) {
-			afterAuthentication(user);
-		}
-	}, [isAuthenticated]);
-
-	const logIn = async () => {
-		if (!isAuthenticated) {
-
-			await authenticate({ signinMessage: "Loggin in..." })
-				.then((user) => {
-					afterAuthentication(user);
-				})
-				.catch((error) => {
-					console.error("authentication failed:", error);
-				});
-		}
-	}
-
-	const logOut = async () => {
-		await logout();
-		console.log("user logged out.");
-	}
-
-	return <>
-		<button onClick={logIn}>Login</button>
-	</>
+		console.log(userData)
+	};
+	
+	return (
+		<div>
+			<button onClick={() => handleAuth()}>Authenticate via Metamask</button>
+		</div>
+	);
 }
 
-export default Login;
+export default Signin;
