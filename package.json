@@ -16,14 +16,17 @@
     "axios": "0.21.2",
     "cross-fetch": "^3.1.5",
     "leaflet": "^1.8.0",
+    "moralis-v1": "^1.11.0",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
-    "react-leaflet": "^4.0.2"
+    "react-leaflet": "^4.0.2",
+    "react-moralis": "^1.4.1",
+    "wagmi": "^0.6.4"
   },
   "devDependencies": {
     "@types/leaflet": "^1.7.11",
     "@types/node": "^18.7.13",
-    "@types/react": "^18.0.17",
+    "@types/react": "^18.0.18",
     "@types/react-dom": "^18.0.6",
     "@vitejs/plugin-react": "^2.0.1",
     "prettier": "^2.7.1",

@@ -5,6 +5,10 @@ import "leaflet/dist/leaflet.css";
 
 import Map from "./components/Map";
 
+import { MoralisProvider } from 'react-moralis';
+// @ts-ignore
+import Login from './components/Login.jsx';
+
 const theme = createTheme({
   palette: {
     primary: cyan,
@@ -13,10 +17,16 @@ const theme = createTheme({
 });
 
 function App() {
+  const serverurl = import.meta.env.VITE_SERVER_URL;
+  const appid     = import.meta.env.VITE_APP_ID;
   return (
-    <ThemeProvider theme={theme}>
-      <Map />
-    </ThemeProvider>
+    <MoralisProvider serverUrl={serverurl} appId={appid}>
+      <ThemeProvider theme={theme}>
+        {serverurl}
+        <Login />
+        {/*<Map />*/}
+      </ThemeProvider>
+    </MoralisProvider>
   );
 }
 
