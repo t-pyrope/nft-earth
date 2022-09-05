@@ -5,10 +5,14 @@ import "leaflet/dist/leaflet.css";
 
 import Map from "./components/Map";
 
-import { createClient, configureChains, defaultChains, WagmiConfig } from 'wagmi';
-import { publicProvider } from 'wagmi/providers/public';
-// @ts-ignore
-import Login from './components/Login.jsx';
+import {
+  createClient,
+  configureChains,
+  defaultChains,
+  WagmiConfig,
+} from "wagmi";
+import { publicProvider } from "wagmi/providers/public";
+import Login from "./components/Login";
 
 const theme = createTheme({
   palette: {
@@ -17,7 +21,9 @@ const theme = createTheme({
   },
 });
 
-const { provider, webSocketProvider } = configureChains(defaultChains, [publicProvider()]);
+const { provider, webSocketProvider } = configureChains(defaultChains, [
+  publicProvider(),
+]);
 
 const client = createClient({
   provider,
@@ -30,7 +36,7 @@ function App() {
     <ThemeProvider theme={theme}>
       <WagmiConfig client={client}>
         <Login />
-        {/*<Map />*/}
+        <Map />
       </WagmiConfig>
     </ThemeProvider>
   );

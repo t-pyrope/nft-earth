@@ -26,10 +26,16 @@ function Grid({
 
   useEffect(() => {
     map.whenReady(() => drawGrid(map, api));
-    map.on("moveend", () => {
+    map.on("zoomend", function () {
       setMoveEnd(Math.random());
       drawGrid(map, api);
     });
+
+    map.on("dragend", function () {
+      setMoveEnd(Math.random());
+      drawGrid(map, api);
+    });
+
     map.on("movestart", () => {
       setLineOpacity(0);
     });
@@ -45,6 +51,7 @@ function ChosenSquares({
   words,
   setMoveEnd,
   claimed,
+  moveEnd,
 }: {
   chosenSquares: string[];
   api: What3wordsService;
@@ -52,6 +59,7 @@ function ChosenSquares({
   words: string;
   setMoveEnd: React.Dispatch<React.SetStateAction<number>>;
   claimed: boolean;
+  moveEnd: number;
 }) {
   const map = useMap();
 
@@ -63,7 +71,7 @@ function ChosenSquares({
         drawChosenSquares(map, api, chosenSquares, isClaiming, setMoveEnd);
       }
     }
-  }, [chosenSquares, isClaiming]);
+  }, [chosenSquares, isClaiming, moveEnd]);
 
   return null;
 }
@@ -154,7 +162,6 @@ function Map() {
         zoom={19}
         scrollWheelZoom={false}
         maxZoom={21}
-        minZoom={18}
       >
         <TileLayer
           attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
@@ -175,6 +182,7 @@ function Map() {
           words={words}
           setMoveEnd={setMoveEnd}
           claimed={claimed}
+          moveEnd={moveEnd}
         />
       </MapContainer>
       {!isClaiming && (
