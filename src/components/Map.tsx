@@ -8,6 +8,7 @@ import { GREEN } from '../constants'
 import { drawChosenSquares, drawGrid } from '../helpers'
 import AddressBox from './AddressBox'
 import { Box, Button } from '@mui/material'
+import CameraPopup from './CameraPopup'
 
 const options = {
     enableHighAccuracy: true,
@@ -94,6 +95,9 @@ function Map() {
     const [lineRight, setLineRight] = useState(0)
     const [lineBottom, setLineBottom] = useState(0)
     const [lineOpacity, setLineOpacity] = useState(1)
+
+    const [dialogOpen, setDialogOpen] = useState(true)
+    const [imageDataURL, setImageDataURL] = useState<string | null>(null)
 
     const api = what3words()
     api.setApiKey(import.meta.env.VITE_API_KEY ?? '')
@@ -250,6 +254,7 @@ function Map() {
                         Claim tile
                     </Button>
                 )}
+                <CameraPopup popupOpen={dialogOpen} />
             </Box>
         </div>
     )
