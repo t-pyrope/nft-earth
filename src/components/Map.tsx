@@ -9,6 +9,8 @@ import { drawChosenSquares, drawGrid } from '../helpers'
 import AddressBox from './AddressBox'
 import { Box, Button } from '@mui/material'
 
+import { ClaimTileButton, ClaimLandButton } from './ClaimButtons';
+
 const options = {
     enableHighAccuracy: true,
 }
@@ -233,22 +235,39 @@ function Map() {
                 }}
             >
                 {isClaiming ? (
-                    <Button
+                    {/*<Button
                         onClick={finishTracking}
                         color="error"
                         variant="contained"
                         size="large"
                     >
                         Claim land
-                    </Button>
+                    </Button>*/}
+                    <ClaimLandButton
+                        onClick={finishTracking}
+                        color="error"
+                        variant="contained"
+                        size="large"
+                    >
+                        Claim Land
+                    </ClaimLandButton>
                 ) : (
-                    <Button
+                    {/*<Button
                         onClick={startTracking}
                         color="primary"
                         variant="contained"
                     >
                         Claim tile
-                    </Button>
+                    </Button>*/}
+                    <ClaimTileButton
+                        onClick={startTracking}
+                        color="primary"
+                        variant="contained"
+                        size="large"
+                        tileString={"example.three.words"}
+                    >
+                        Claim tile
+                    </ClaimTileButton>
                 )}
             </Box>
         </div>

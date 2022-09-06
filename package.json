@@ -15,6 +15,7 @@
     "@what3words/api": "^4.0.7",
     "axios": "0.21.2",
     "cross-fetch": "^3.1.5",
+    "ethers": "^5.7.0",
     "leaflet": "^1.8.0",
     "moralis": "^2.2.0",
     "moralis-v1": "^1.11.0",

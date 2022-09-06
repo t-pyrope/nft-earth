@@ -10,7 +10,7 @@ function Signin() {
       connector: new InjectedConnector(),
     });
 
-    const userData = { address: account, chain: chain.id, network: "evm" };
+    const userData = { address: account, chain: chain.id, network: "rinkeby" };
 
     console.log(userData);
   };
