@@ -96,8 +96,7 @@ function Map() {
     const [lineBottom, setLineBottom] = useState(0)
     const [lineOpacity, setLineOpacity] = useState(1)
 
-    const [dialogOpen, setDialogOpen] = useState(true)
-    const [imageDataURL, setImageDataURL] = useState<string | null>(null)
+    const [popupOpened, setPopupOpened] = useState(false)
 
     const api = what3words()
     api.setApiKey(import.meta.env.VITE_API_KEY ?? '')
@@ -159,6 +158,7 @@ function Map() {
     const finishTracking = () => {
         setIsClaiming(false)
         setClaimed(true)
+        setPopupOpened(true)
     }
 
     if (!hasAccessToLocation || !initialCoords)
@@ -254,7 +254,11 @@ function Map() {
                         Claim tile
                     </Button>
                 )}
-                <CameraPopup popupOpen={dialogOpen} />
+                <CameraPopup
+                    popupOpened={popupOpened}
+                    setPopupOpened={setPopupOpened}
+                    chosenSquares={chosenSquares}
+                />
             </Box>
         </div>
     )

@@ -11,7 +11,9 @@
   "dependencies": {
     "@emotion/react": "^11.10.0",
     "@emotion/styled": "^11.10.0",
+    "@mui/icons-material": "^5.10.3",
     "@mui/material": "^5.10.2",
+    "@types/react-transition-group": "^4.4.5",
     "@what3words/api": "^4.0.7",
     "axios": "0.21.2",
     "cross-fetch": "^3.1.5",
@@ -23,6 +25,7 @@
     "react-dom": "^18.2.0",
     "react-leaflet": "^4.0.2",
     "react-moralis": "^1.4.1",
+    "react-transition-group": "^4.4.5",
     "styled-components": "^5.3.5",
     "wagmi": "^0.6.4"
   },
