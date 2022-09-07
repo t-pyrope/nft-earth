@@ -1,15 +1,17 @@
-import { Moralis } from 'moralis';
+/* @ts-ignore */
+import { useState, useEffect } from 'react';
+import Moralis from 'moralis';
+import { useMoralisCloudFunction } from 'react-moralis';
 import { EvmChain } from '@moralisweb3/evm-utils';
 import { earth_contracts } from '../utils.js';
-import { useMoralisCloudFunction } from 'react-moralis';
 import { ethers } from 'ethers';
 import { Button } from '@mui/material'
 
 // minting contract interaction
-async function mint(){
-    const abi          = chains.rinkeby.ABI; // Add ABI
+async function mint( price: string, metadata: string ){
+    const abi          = earth_contracts.rinkeby.ABI; // Add ABI
     const functionName = 'mint';
-    const address      = chains.rinkeby.ADDRESS;
+    const address      = earth_contracts.rinkeby.ADDRESS;
     const chain        = EvmChain.RINKEBY;
     const params       = {
                             uri: metadata,
@@ -25,14 +27,16 @@ async function mint(){
         functionName,
         address,
         chain,
+        params,
     });
     console.log(response.result);
 }
 
+
 // petar's hash function
-function finalHash( tileString ){
+function finalHash( tileString: string[] ){
     // let plotView = [];
-    let plotView = [ tileString ];
+    let plotView = tileString;
     let hashStore=[];
     let hashedArrAsString;
     let plotID;
@@ -47,6 +51,7 @@ function finalHash( tileString ){
     plotID = ethers.utils.id(hashedArrAsString);
     console.log(plotID);
     nftObject = Object.assign({}, hashStore);
+    /* @ts-ignore */
     nftObject.masterHash = plotID;
     console.log(nftObject);
 
@@ -55,7 +60,8 @@ function finalHash( tileString ){
 
 
 // Claim Tile Button
-export const ClaimTileButton ( props ) => {
+/* @ts-ignore */
+export const ClaimTileButton = ( props ) => {
     // moralis cloud function that saves data to database
     const { fetch:save, data, error } = useMoralisCloudFunction(
         'registerTile', {pickedTile: finalHash, autoFetch:false}
@@ -67,37 +73,38 @@ export const ClaimTileButton ( props ) => {
     // log and return the result
     console.log("Tile saved for the user:", null ?? data);
 
-    return <>
+    return (
         <Button
             onClick={props.onClick, ()=>{ finalHash(props.tileString) }}
             color={props.color}
             variant={props.variant}
             size={props.size}
         >
-            {children}
+            {props.textValue}
         </Button>
-    </>
+    )
 }
 
 
 // Claim Land Button
+/* @ts-ignore */
 export const ClaimLandButton = ( props ) => {
-    const [hash, setHash] = useState('');
+    const [hash, setHash] = useState();
 
     finalHash(props.stringToHash);
 
     useEffect(()=>{
-        setHash()
+        setHash( finalHash() ); // issue
     },[finalHash]);
 
-    return <>
+    return (
         <Button
             onClick={props.onClick}
             color={props.color}
             variant={props.variant}
             size={props.size}
         >
-            {children}
+            {props.textValue}
         </Button>
-    </>
+    )
 }

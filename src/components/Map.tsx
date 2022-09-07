@@ -234,41 +234,22 @@ function Map() {
                     zIndex: 401,
                 }}
             >
-                {isClaiming ? (
-                    {/*<Button
-                        onClick={finishTracking}
-                        color="error"
-                        variant="contained"
-                        size="large"
-                    >
-                        Claim land
-                    </Button>*/}
+                {isClaiming ?
                     <ClaimLandButton
                         onClick={finishTracking}
-                        color="error"
-                        variant="contained"
-                        size="large"
-                    >
-                        Claim Land
-                    </ClaimLandButton>
-                ) : (
-                    {/*<Button
-                        onClick={startTracking}
-                        color="primary"
-                        variant="contained"
-                    >
-                        Claim tile
-                    </Button>*/}
+                        color={"primary"}
+                        variant={"contained"}
+                        textValue={"Claim Land"}
+                    />
+                :
                     <ClaimTileButton
                         onClick={startTracking}
-                        color="primary"
-                        variant="contained"
-                        size="large"
-                        tileString={"example.three.words"}
-                    >
-                        Claim tile
-                    </ClaimTileButton>
-                )}
+                        color={"primary"}
+                        variant={"contained"}
+                        tileString={['example', 'three', 'words']}
+                        textValue={"Claim Square"}
+                    />
+                }
             </Box>
         </div>
     )
