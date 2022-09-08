@@ -20,7 +20,7 @@ body {
 
 .leaflet-container {
   width: 100%;
-  height: calc(100vh - 36.5px);
+  height: 100vh;
 }
 
 .page-header {
@@ -35,31 +35,36 @@ body {
   border-bottom: 2px solid #618833;
 }
 
-.address-box {
+.header {
   position: absolute;
   top: 16px;
   left: 50px;
-  width: calc(100% - 66px);
-  max-width: 400px;
+  right: 10px;
   z-index: 401;
+}
+
+.address-box {
+  position: relative;
+  width: 100%;
+  max-width: 400px;
   border-bottom: 2px solid #0a3049;
   box-shadow: 0 0 1px -2px rgb(0 0 0 / 20%), 0 0 2px 0 rgb(0 0 0 / 14%), 0 0 5px 0 rgb(0 0 0 / 12%);
   padding: 12px;
   background-color: #fff;
   color: #0A3049;
   font-weight: 700;
-  font-size: 20px;
+  font-size: 18px;
 }
 
 .red-slashes {
   color: #e11f26;
 }
 
-.line-container {
-  z-index: 400;
+.menu-button {
   position: absolute;
-  top: 60px;
-  left: 50px;
+  right: 0;
+  top: 50%;
+  transform: translateY(-50%);
 }
 
 .line-text {
