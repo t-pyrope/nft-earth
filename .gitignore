@@ -2,8 +2,10 @@
 logs
 *.log
 npm-debug.log*
+npm i --save-dev vite @vitejs/plugin-react vite-plugin-html
 yarn-debug.log*
 yarn-error.log*
+yarn add vite @vitejs/plugin-react vite-plugin-html --dev
 pnpm-debug.log*
 lerna-debug.log*
 
