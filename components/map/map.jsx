@@ -1,28 +1,23 @@
+// Note -  There are some bugs in this component at what3words and lealet js itegration part, 
+// that needs to be fixed immidiately.
+
 import React, { useEffect, useState } from 'react'
-import { LatLngTuple } from 'leaflet'
 import { MapContainer, TileLayer, useMap } from 'react-leaflet'
 import what3words from '@what3words/api'
-import { What3wordsService } from '@what3words/api/dist/service'
+import { drawChosenSquares, drawGrid, addSquare } from '../../helpers'
+import Header from '../Header'
+import CameraPopup from '../CameraPopup'
+import { useSession } from "next-auth/react"
+import Loading from '../Loading'
 
-import { GREEN } from '../constants'
-import { drawChosenSquares, drawGrid } from '../helpers'
-import Header from './Header'
-import { Box, Button } from '@mui/material'
-import CameraPopup from './CameraPopup'
-
+const GREEN = '#1ec716'
+const LBLACK = '#443d3d'
 const options = {
   enableHighAccuracy: true,
 }
 
-function Grid({
-  api,
-  setMoveEnd,
-  setLineOpacity,
-}: {
-  api: What3wordsService
-  setMoveEnd: React.Dispatch<React.SetStateAction<number>>
-  setLineOpacity: React.Dispatch<React.SetStateAction<number>>
-}) {
+
+function Grid({ api, setMoveEnd, setLineOpacity, }) {
   const map = useMap()
 
   useEffect(() => {
@@ -40,28 +35,14 @@ function Grid({
     map.on('movestart', () => {
       setLineOpacity(0)
     })
-  }, [map, api])
+
+  }, [map, api, setMoveEnd, setLineOpacity])
 
   return null
 }
 
-function ChosenSquares({
-  api,
-  chosenSquares,
-  isClaiming,
-  words,
-  setMoveEnd,
-  claimed,
-  moveEnd,
-}: {
-  chosenSquares: string[]
-  api: What3wordsService
-  isClaiming: boolean
-  words: string
-  setMoveEnd: React.Dispatch<React.SetStateAction<number>>
-  claimed: boolean
-  moveEnd: number
-}) {
+
+function ChosenSquares({ api, chosenSquares, isClaiming, words, setMoveEnd, claimed, moveEnd, }) {
   const map = useMap()
 
   useEffect(() => {
@@ -72,22 +53,20 @@ function ChosenSquares({
         drawChosenSquares(map, api, chosenSquares, isClaiming, setMoveEnd)
       }
     }
-  }, [chosenSquares, isClaiming, moveEnd])
+  }, [chosenSquares, isClaiming, moveEnd, api, claimed, setMoveEnd, map, words])
 
   return null
 }
 
-function Map({
-  setIsDrawerOpen,
-}: {
-  setIsDrawerOpen: React.Dispatch<React.SetStateAction<boolean>>
-}) {
+
+function Map() {
+  const { data: session } = useSession()
   const [hasAccessToLocation, setHasAccessToLocation] = useState(false)
   const [isClaiming, setIsClaiming] = useState(false)
   const [claimed, setClaimed] = useState(false)
-  const [chosenSquares, setChosenSquares] = useState<Array<string>>([])
+  const [chosenSquares, setChosenSquares] = useState([])
   const [words, setWords] = useState('')
-  const [initialCoords, setInitialCoords] = useState<LatLngTuple>()
+  const [initialCoords, setInitialCoords] = useState()
   const [moveEnd, setMoveEnd] = useState(0)
 
   const [lineRight, setLineRight] = useState(0)
@@ -97,7 +76,8 @@ function Map({
   const [popupOpened, setPopupOpened] = useState(false)
 
   const api = what3words()
-  api.setApiKey(import.meta.env.VITE_API_KEY ?? '')
+  api.setApiKey(process.env.NEXT_PUBLIC_API_KEY)
+
 
   useEffect(() => {
     const id = navigator.geolocation.watchPosition(
@@ -135,8 +115,9 @@ function Map({
     )
 
     return () => navigator.geolocation.clearWatch(id)
-  }, [initialCoords, chosenSquares])
+  }, [initialCoords, chosenSquares, api])
 
+  
   useEffect(() => {
     if (isClaiming) return
     const el = document.getElementsByClassName(words + GREEN.slice(1))[0]
@@ -148,7 +129,7 @@ function Map({
       setLineBottom(rect.bottom - 60)
       setLineOpacity(1)
     }
-  }, [moveEnd, chosenSquares, isClaiming])
+  }, [moveEnd, chosenSquares, isClaiming, words])
 
   const startTracking = () => {
     setIsClaiming(true)
@@ -161,7 +142,11 @@ function Map({
   }
 
   if (!hasAccessToLocation || !initialCoords)
-    return <div style={{ margin: '2rem' }}>Loading...</div>
+    return(
+      <div style={{ margin: '2rem' }}>
+        <Loading/>
+      </div>
+    )
 
   return (
     <div style={{ position: 'relative' }}>
@@ -192,64 +177,44 @@ function Map({
           claimed={claimed}
           moveEnd={moveEnd}
         />
+
       </MapContainer>
       {!isClaiming && (
         <div
-          className="line-text"
+          className=" z-[400] absolute text-blue-500 text-sm font-bold"
           style={{
             top: lineBottom + 15 + 'px',
             left: lineRight + 50 + 'px',
             opacity: lineOpacity,
           }}
         >
-          You are here
+          My Location
         </div>
       )}
-      <Header words={words} setIsDrawerOpen={setIsDrawerOpen} />
-      <div
-        style={{
-          position: 'absolute',
-          bottom: '80px',
-          left: '50px',
-          right: '50px',
-
-          fontSize: '13px',
-          padding: '5px',
-          background: '#fff',
-          zIndex: 401,
-        }}
-      >
-        {chosenSquares.join(' ')}
+      <Header words={words} />   
+      <div style={{ position: 'absolute', bottom: '1rem', left: '2rem', right: '2rem', fontSize: '13px', padding: '5px', zIndex: 401,}}>
+        <div className="relative w-[fit-content]">
+          <div className="flex p-2 w-full text-sm text-gray-900 bg-gray-50 rounded-lg border border-gray-300 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500">
+            <div className='py-2 px-2'>
+              {chosenSquares.join(' ')}
+            </div>
+            <div className='flex flex-row-reverse'>
+              {isClaiming ? (
+                <button onClick={finishTracking} type="button" className="text-white bg-gradient-to-r from-green-400 via-green-500 to-green-600 hover:bg-gradient-to-br focus:ring-4 focus:outline-none focus:ring-green-300 dark:focus:ring-green-800 font-medium rounded-lg px-6 py-2">Claim Land</button>
+              ) : (
+                !session ?(
+                  <button onClick={()=>{alert('Please Authenticate to Claim tile')}} type="button" className=" text-white bg-gradient-to-r from-blue-500 via-blue-600 to-blue-700 hover:bg-gradient-to-br focus:ring-4 focus:outline-none focus:ring-blue-300 dark:focus:ring-blue-800 font-medium rounded-lg px-6 py-2">Claim Tile</button>
+                ):(
+                  <button onClick={startTracking} type="button" className=" text-white bg-gradient-to-r from-blue-500 via-blue-600 to-blue-700 hover:bg-gradient-to-br focus:ring-4 focus:outline-none focus:ring-blue-300 dark:focus:ring-blue-800 font-medium rounded-lg px-6 py-2">Claim Tile</button>
+                )
+              )}
+            </div>
+          </div>
+              <CameraPopup popupOpened={popupOpened} setPopupOpened={setPopupOpened} chosenSquares={chosenSquares} />
+          <div>
+          </div>
+        </div>
       </div>
-      <Box
-        sx={{
-          position: 'absolute',
-          bottom: '30px',
-          right: '70px',
-          left: '50px',
-          zIndex: 401,
-        }}
-      >
-        {isClaiming ? (
-          <Button
-            onClick={finishTracking}
-            color="error"
-            variant="contained"
-            size="large"
-          >
-            Claim land
-          </Button>
-        ) : (
-          <Button onClick={startTracking} color="primary" variant="contained">
-            Claim tile
-          </Button>
-        )}
-        <CameraPopup
-          popupOpened={popupOpened}
-          setPopupOpened={setPopupOpened}
-          chosenSquares={chosenSquares}
-        />
-      </Box>
     </div>
   )
 }
